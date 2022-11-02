@@ -12,7 +12,7 @@ from torch_geometric.data import Data
 from torch_geometric.nn import EdgeConv
 from torch_scatter import scatter_max, scatter_mean, scatter_min, scatter_sum
 from graphnet.components.layers import DynEdgeConv
-from graphnet.models.coarsening import DOMCoarsening
+from graphnet.models.coarsening import Coarsening, DOMCoarsening
 
 from graphnet.models.gnn.gnn import GNN
 from graphnet.models.utils import calculate_xyzt_homophily
@@ -185,7 +185,13 @@ class DOMCoarsenedDynEdge(DynEdge):
 
 
 class DynEdge_V2(GNN):
-    def __init__(self, nb_inputs, layer_size_scale=4):
+    def __init__(
+        self,
+        nb_inputs,
+        layer_size_scale=4,
+        node_pooling: Coarsening = None,
+        nb_neighbors: int = 8,
+    ):
         """DynEdge model.
 
         Args:
@@ -205,7 +211,8 @@ class DynEdge_V2(GNN):
             c * 32 * 2,
             c * 16 * 2,
         )
-
+        # Node Pooling via Coarsening Module
+        self._coarsening = node_pooling
         # Base class constructor
         super().__init__(nb_inputs, l6)
 
@@ -276,7 +283,8 @@ class DynEdge_V2(GNN):
         Returns:
             Tensor: Model output.
         """
-
+        if self._coarsening is not None:
+            data = self._coarsening(data)
         # Convenience variables
         x, edge_index, batch = data.x, data.edge_index, data.batch
 
