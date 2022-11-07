@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>graphnet.data.constants &mdash; graphnet  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> graphnet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">graphnet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">graphnet.data.constants</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for graphnet.data.constants</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Global constants that are used with `graphnet.data`.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="FEATURES"><a class="viewcode-back" href="../../../graphnet.data.html#graphnet.data.constants.FEATURES">[docs]</a><span class="k">class</span> <span class="nc">FEATURES</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Namespace for standard names working with `I3FeatureExtractor`.&quot;&quot;&quot;</span>
+
+    <span class="n">ICECUBE86</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;dom_x&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dom_y&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dom_z&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dom_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;charge&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rde&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pmt_area&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">DEEPCORE</span> <span class="o">=</span> <span class="n">ICECUBE86</span>
+    <span class="n">UPGRADE</span> <span class="o">=</span> <span class="n">DEEPCORE</span> <span class="o">+</span> <span class="p">[</span>
+        <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pmt_number&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dom_number&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pmt_dir_x&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pmt_dir_y&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pmt_dir_z&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dom_type&quot;</span><span class="p">,</span>
+    <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="TRUTH"><a class="viewcode-back" href="../../../graphnet.data.html#graphnet.data.constants.TRUTH">[docs]</a><span class="k">class</span> <span class="nc">TRUTH</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Namespace for standard names working with `I3TruthExtractor`.&quot;&quot;&quot;</span>
+
+    <span class="n">ICECUBE86</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;energy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;energy_track&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position_x&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position_y&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position_z&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;azimuth&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;zenith&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;elasticity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sim_type&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;interaction_type&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;interaction_time&quot;</span><span class="p">,</span>  <span class="c1"># Added for vertex reconstruction</span>
+        <span class="s2">&quot;inelasticity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;stopped_muon&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">DEEPCORE</span> <span class="o">=</span> <span class="n">ICECUBE86</span>
+    <span class="n">UPGRADE</span> <span class="o">=</span> <span class="n">DEEPCORE</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, IceCube Collaboration.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
