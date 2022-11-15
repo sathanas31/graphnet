@@ -2,6 +2,7 @@
 
 import logging
 import os
+import argparse
 
 from graphnet.utilities.logging import get_logger
 
@@ -17,6 +18,38 @@ from graphnet.data.sqlite import SQLiteDataConverter
 
 logger = get_logger(level=logging.INFO)
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--indir", type=str, help="Input i3 files dir")
+parser.add_argument("-o", "--outdir", type=str, help="Output databases dir")
+parser.add_argument(
+    "-convert",
+    type=str,
+    help="How to convert data, either SQLite or Parquet",
+    choices=["sqlite", "parquet"],
+    required=True,
+)
+parser.add_argument(
+    "-array",
+    type=str,
+    help="Choose between IceCube86 and Upgrade/Gen2",
+    choices=["Icecube", "Upgrade", "Gen2"],
+    required=True,
+)
+parser.add_argument(
+    "-ic_keys",
+    type=str,
+    help="Choose keys for extraction when IceCube86 array",
+    nargs="*",
+)
+parser.add_argument(
+    "-upgrade_keys",
+    type=str,
+    help="Choose pulsemaps for extraction when Upgrade/Gen2 array",
+    nargs="*",
+)
+
+args = parser.parse_args()
+
 CONVERTER_CLASS = {
     "sqlite": SQLiteDataConverter,
     "parquet": ParquetDataConverter,
@@ -28,17 +61,12 @@ def main_icecube86(backend: str) -> None:
     # Check(s)
     assert backend in CONVERTER_CLASS
 
-    inputs = ["./test_data/"]
-    outdir = "./temp/test_ic86"
+    inputs = [args.indir]
+    outdir = args.outdir
 
     converter: DataConverter = CONVERTER_CLASS[backend](
         [
-            I3GenericExtractor(
-                keys=[
-                    "SRTInIcePulses",
-                    "I3MCTree",
-                ]
-            ),
+            I3GenericExtractor(keys=args.ic_keys),
             I3TruthExtractor(),
         ],
         outdir,
@@ -53,21 +81,18 @@ def main_icecube_upgrade(backend: str) -> None:
     # Check(s)
     assert backend in CONVERTER_CLASS
 
-    inputs = ["test_data_upgrade_2"]
-    outdir = "./temp/test_upgrade"
+    inputs = [args.indir]
+    outdir = args.outdir
     workers = 1
 
+    extractors = [I3TruthExtractor()]
+    if args.array == "Upgrade":
+        extractors.append(I3RetroExtractor())
+    for pulses in args.upgrade_keys:
+        extractors.append(I3FeatureExtractorIceCubeUpgrade(pulses))
+
     converter: DataConverter = CONVERTER_CLASS[backend](
-        [
-            I3TruthExtractor(),
-            I3RetroExtractor(),
-            I3FeatureExtractorIceCubeUpgrade(
-                "I3RecoPulseSeriesMapRFCleaned_mDOM"
-            ),
-            I3FeatureExtractorIceCubeUpgrade(
-                "I3RecoPulseSeriesMapRFCleaned_DEgg"
-            ),
-        ],
+        extractors,
         outdir,
         workers=workers,
         # nb_files_to_batch=10,
@@ -81,7 +106,8 @@ def main_icecube_upgrade(backend: str) -> None:
 
 
 if __name__ == "__main__":
-    backend = "parquet"
-    # backend = "sqlite"
-    main_icecube86(backend)
-    # main_icecube_upgrade(backend)
+    backend = args.convert
+    if args.array == "Icecube":
+        main_icecube86(backend)
+    elif args.array == "Upgrade" or args.array == "Gen2":
+        main_icecube_upgrade(backend)
