@@ -78,7 +78,7 @@ parser.add_argument(
     "-num_workers", type=int, help="Choose number of workers", default=10
 )
 parser.add_argument(
-    "-num_devices", type=int, help="Choose how many gpus", default=1
+    "-num_devices", type=int, help="Choose how many gpus", default=0
 )
 parser.add_argument(
     "-epochs", type=int, help="Choose how many epochs", default=1
