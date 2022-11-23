@@ -4,6 +4,7 @@
 import os
 from typing import Any, Dict
 
+import argparse
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
@@ -16,9 +17,13 @@ from graphnet.data.sqlite.sqlite_selection import (
     get_equal_proportion_neutrino_indices,
 )
 from graphnet.models import StandardModel
-from graphnet.models.coarsening import DOMCoarsening
 from graphnet.models.detector.icecube import IceCubeDeepCore
 from graphnet.models.gnn.dynedge import DynEdge
+from graphnet.models.coarsening import (
+    DOMCoarsening,
+    CustomDOMCoarsening,
+    # DOMAndTimeWindowCoarsening,
+)
 from graphnet.models.graph_builders import KNNGraphBuilder
 from graphnet.models.task.reconstruction import (
     ZenithReconstructionWithKappa,
@@ -34,6 +39,50 @@ from graphnet.utilities.logging import get_logger
 
 logger = get_logger()
 
+# Argument parsing
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-i", "--infile", type=str, help="Input database")
+parser.add_argument("-o", "--outfile", type=str, help="Output path")
+parser.add_argument(
+    "-wb",
+    "--wandb_path",
+    type=str,
+    help="Enable W&B by giving the dest path",
+    default=None,
+)
+parser.add_argument(
+    "-node_pooling",
+    type=str,
+    help="Choose which node pooling mode",
+    default=None,
+    choices=["dom_coarsening", "custom_dom_coarsening", "dom_twd_coarsening"],
+)
+# TODO default value for time window?
+# parser.add_argument(
+#     "-time_window",
+#     type=float,
+#     help="Cluster pulses on the same DOM within time window",
+#     default=None,
+# )
+parser.add_argument(
+    "-pulses", type=str, help="Choose pulsemap", default="TWSRTOfflinePulses"
+)
+parser.add_argument(
+    "-batch_size", type=int, help="Choose batch size", default=512
+)
+parser.add_argument(
+    "-num_workers", type=int, help="Choose number of workers", default=10
+)
+parser.add_argument(
+    "-num_devices", type=int, help="Choose GPUs index!", default=0
+)
+parser.add_argument(
+    "-epochs", type=int, help="Choose how many epochs", default=1
+)
+
+args = parser.parse_args()
+
 # Configurations
 torch.multiprocessing.set_sharing_strategy("file_system")
 
@@ -41,23 +90,26 @@ torch.multiprocessing.set_sharing_strategy("file_system")
 features = FEATURES.DEEPCORE
 truth = TRUTH.DEEPCORE[:-1]
 
-# Make sure W&B output directory exists
-WANDB_DIR = "./wandb/"
-os.makedirs(WANDB_DIR, exist_ok=True)
 
-# Initialise Weights & Biases (W&B) run
-wandb_logger = WandbLogger(
-    project="example-script",
-    entity="graphnet-team",
-    save_dir=WANDB_DIR,
-    log_model=True,
-)
+if args.wandb_path is not None:
+    # Make sure W&B output directory exists
+    WANDB_DIR = args.wandb_path + "/wandb/"
+    os.makedirs(WANDB_DIR, exist_ok=True)
+
+    # Initialise Weights & Biases (W&B) run
+    wandb_logger = WandbLogger(
+        project="example-script",
+        entity="graphnet-team",
+        save_dir=WANDB_DIR,
+        log_model=True,
+    )
 
 
 def train(config: Dict[str, Any]) -> None:
     """Train model with configuration given by `config`."""
-    # Log configuration to W&B
-    wandb_logger.experiment.config.update(config)
+    if args.wandb_path is not None:
+        # Log configuration to W&B
+        wandb_logger.experiment.config.update(config)
 
     # Common variables
     train_selection, _ = get_equal_proportion_neutrino_indices(config["db"])
@@ -83,14 +135,19 @@ def train(config: Dict[str, Any]) -> None:
     detector = IceCubeDeepCore(
         graph_builder=KNNGraphBuilder(nb_nearest_neighbours=8),
     )
-    if config["node_pooling"]:
+    if config["node_pooling"] == "dom_coarsening":
         coarsening = DOMCoarsening()
-    else:
-        coarsening = None
+    elif config["node_pooling"] == "custom_dom_coarsening":
+        coarsening = CustomDOMCoarsening()
+    # TODO
+    # elif config["node_pooling"] == 'dom_twd_coarsening':
+    #     coarsening=DOMAndTimeWindowCoarsening(time_window=args.time_window)
+
     gnn = DynEdge(
         nb_inputs=detector.nb_outputs,
         global_pooling_schemes=["min", "max", "mean", "sum"],
     )
+
     if config["target"] == "zenith":
         task = ZenithReconstructionWithKappa(
             hidden_size=gnn.nb_outputs,
@@ -140,7 +197,7 @@ def train(config: Dict[str, Any]) -> None:
         max_epochs=config["n_epochs"],
         callbacks=callbacks,
         log_every_n_steps=1,
-        logger=wandb_logger,
+        logger=wandb_logger if args.wandb_path is not None else True,
     )
 
     try:
@@ -166,24 +223,24 @@ def train(config: Dict[str, Any]) -> None:
 def main() -> None:
     """Run example."""
     for target in ["zenith", "azimuth"]:
-        archive = "/remote/ceph/user/o/oersoe/high_energy_example/results"
+        archive = args.outfile
         run_name = "dynedge_{}_example".format(target)
 
         # Configuration
         config = {
-            "db": "/mnt/scratch/rasmus_orsoe/databases/HE/dev_lvl5_NuE_NuMu_NuTau_Mirco/data/dev_lvl5_NuE_NuMu_NuTau_Mirco.db",
-            "pulsemap": "TWSRTOfflinePulses",
-            "batch_size": 512,
-            "num_workers": 10,
+            "db": args.infile,
+            "pulsemap": args.pulses,
+            "batch_size": args.batch_size,
+            "num_workers": args.num_workers,
             "accelerator": "gpu",
-            "devices": [2],
+            "devices": [args.num_devices],
             "target": target,
-            "n_epochs": 5,
+            "n_epochs": args.epochs,
             "patience": 5,
             "archive": archive,
             "run_name": run_name,
             "max_events": 50000,
-            "node_pooling": True,
+            "node_pooling": args.node_pooling,
         }
         train(config)
 
