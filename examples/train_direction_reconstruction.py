@@ -211,7 +211,7 @@ def train(config: Dict[str, Any]) -> None:
         trainer,
         model,
         validation_dataloader,
-        [config["target"] + "_pred"],
+        [config["target"] + "_pred", config["target"] + "_kappa_pred"],
         additional_attributes=[config["target"], "event_no"],
     )
 
