@@ -22,6 +22,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--indir", type=str, help="Input i3 files dir")
 parser.add_argument("-o", "--outdir", type=str, help="Output databases dir")
 parser.add_argument(
+    "-gcd",
+    "--gcd_path",
+    type=str,
+    help="If GCD file not in same dir as i3 files to convert, pass the path",
+)
+parser.add_argument(
     "-convert",
     type=str,
     help="How to convert data, either SQLite or Parquet",
@@ -63,6 +69,7 @@ def main_icecube86(backend: str) -> None:
 
     inputs = [args.indir]
     outdir = args.outdir
+    gcd_rescue = args.gcd_path
 
     converter: DataConverter = CONVERTER_CLASS[backend](
         [
@@ -70,6 +77,7 @@ def main_icecube86(backend: str) -> None:
             I3TruthExtractor(),
         ],
         outdir,
+        gcd_rescue=gcd_rescue,
     )
     converter(inputs)
     if backend == "sqlite":
@@ -83,6 +91,7 @@ def main_icecube_upgrade(backend: str) -> None:
 
     inputs = [args.indir]
     outdir = args.outdir
+    gcd_rescue = args.gcd_path
     workers = 1
 
     extractors = [I3TruthExtractor()]
@@ -94,6 +103,7 @@ def main_icecube_upgrade(backend: str) -> None:
     converter: DataConverter = CONVERTER_CLASS[backend](
         extractors,
         outdir,
+        gcd_rescue=gcd_rescue,
         workers=workers,
         # nb_files_to_batch=10,
         # sequential_batch_pattern="temp_{:03d}",
